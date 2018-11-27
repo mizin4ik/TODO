@@ -1,13 +1,11 @@
 import json
-
-from django.utils.decorators import method_decorator
-from django.views import View
-from django.core import serializers
-from django.http import JsonResponse, HttpResponse, Http404
 from datetime import datetime
 
+from django.core import serializers
 from django.forms.models import model_to_dict
-
+from django.http import Http404, HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from crud_operations.models import ToDo
@@ -52,6 +50,15 @@ class TaskOperations(View):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
+    def get(self, request, pk):
+        try:
+            task = ToDo.objects.get(pk=pk)
+        except ToDo.DoesNotExist:
+            raise Http404
+
+        return JsonResponse(model_to_dict(task))
+
+
     def put(self, request, pk):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
@@ -84,4 +91,3 @@ class TaskOperations(View):
         task.delete()
 
         return HttpResponse(status=204)
-
